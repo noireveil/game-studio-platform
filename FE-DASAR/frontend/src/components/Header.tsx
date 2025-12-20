@@ -1,4 +1,4 @@
-import { Gamepad2, ShoppingCart, User } from "lucide-react";
+import { Gamepad2, ShoppingCart, User, Settings } from "lucide-react";
 import { useRouter } from "../context/RouterContext";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
@@ -32,6 +32,13 @@ export default function Header() {
             <>
               <button className="icon-button" onClick={() => navigate("user")}>
                 <User size={24} />
+              </button>
+              <button
+                className="icon-button"
+                onClick={() => navigate("admin")}
+                title="Admin Panel"
+              >
+                <Settings size={24} />
               </button>
               <button className="btn-secondary" onClick={logout}>
                 LOGOUT

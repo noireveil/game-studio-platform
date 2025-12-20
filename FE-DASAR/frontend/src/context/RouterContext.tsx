@@ -7,7 +7,8 @@ type Page =
   | "user"
   | "login"
   | "cart"
-  | "game-details";
+  | "game-details"
+  | "admin";
 
 interface RouterContextType {
   currentPage: Page;

@@ -19,8 +19,8 @@ export default function HomePage() {
         <div className="hero-content">
           <div className="hero-badge">NOW AVAILABLE</div>
           <h1 className="hero-title">
-            <span className="title-white">POOL</span>
-            <span className="title-yellow">MASTER XD</span>
+            <span className="title-white">EPIC</span>
+            <span className="title-yellow">GAMING</span>
           </h1>
           <p className="hero-subtitle">THE ULTIMATE GAMING EXPERIENCE</p>
           <div className="hero-buttons">

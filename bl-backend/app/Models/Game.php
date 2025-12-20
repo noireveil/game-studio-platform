@@ -6,34 +6,37 @@ use Illuminate\Database\Eloquent\Model;
 
 class Game extends Model
 {
-    // Agar kolom ini bisa diisi data (Mass Assignment)
     protected $fillable = [
-        'title', 'description', 'developer', 'platform', 'price', 'release_date'
+        'title', 
+        'description', 
+        'price', 
+        'image', 
+        'category', 
+        'rating', 
+        'features',
+        'is_visible',
     ];
 
-    // --- RELASI (Menghubungkan tabel Games dengan tabel lain) ---
+    protected $casts = [
+        'features' => 'array',
+        'rating' => 'float',
+        'price' => 'float',
+        'is_visible' => 'boolean',
+    ];
 
-    // Game punya banyak Gambar (GameImage)
-    public function images()
+    /**
+     * Get reviews for this game
+     */
+    public function reviews()
     {
-        return $this->hasMany(GameImage::class);
+        return $this->hasMany(Review::class);
     }
 
-    // Game punya banyak Video (GameVideo)
-    public function videos()
+    /**
+     * Get purchases for this game
+     */
+    public function purchases()
     {
-        return $this->hasMany(GameVideo::class);
-    }
-
-    // Game punya banyak Komentar 
-    public function comments()
-    {
-        return $this->hasMany(Comment::class);
-    }
-
-    // Cara pakainya nanti: Game::newReleases()->get();
-    public function scopeNewReleases($query)
-    {
-        return $query->orderBy('release_date', 'desc')->take(5);
+        return $this->hasMany(Purchase::class);
     }
 }

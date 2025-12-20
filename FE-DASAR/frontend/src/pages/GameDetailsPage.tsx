@@ -1,45 +1,130 @@
-import { useState } from "react";
-import { ArrowLeft, Star } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Star, Trash2 } from "lucide-react";
 import { useRouter } from "../context/RouterContext";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { games } from "../data/games";
-import { Review } from "../types";
+import { gamesAPI, reviewsAPI, purchasesAPI } from "../services/api";
+import { Game, Review } from "../types";
 import "./GameDetailsPage.css";
 
 export default function GameDetailsPage() {
   const { navigate, gameId } = useRouter();
-  const { addToCart } = useCart();
+  const { addToCart, isInCart } = useCart();
   const { isAuthenticated, user } = useAuth();
 
-  const game = games.find((g) => g.id === gameId);
-
-  const [reviews, setReviews] = useState<Review[]>([
-    {
-      id: "1",
-      gameId: gameId || "",
-      userId: "1",
-      userName: "ProGamer123",
-      rating: 5,
-      comment:
-        "Amazing game! The graphics are stunning and gameplay is smooth. Highly recommended!",
-      date: "2024-12-10",
-    },
-    {
-      id: "2",
-      gameId: gameId || "",
-      userId: "2",
-      userName: "GameMaster",
-      rating: 4,
-      comment:
-        "Great multiplayer experience. A few bugs but overall very fun to play.",
-      date: "2024-12-08",
-    },
-  ]);
+  const [game, setGame] = useState<Game | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [owned, setOwned] = useState(false);
 
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (gameId) {
+      loadGameData();
+    }
+  }, [gameId, isAuthenticated]);
+
+  const loadGameData = async () => {
+    try {
+      setLoading(true);
+      const [gameResponse, reviewsResponse] = await Promise.all([
+        gamesAPI.getById(gameId!),
+        reviewsAPI.getByGame(gameId!),
+      ]);
+      
+      // Response is already unwrapped by API service
+      setGame({
+        id: String(gameResponse.id),
+        title: gameResponse.title,
+        description: gameResponse.description || "",
+        price: Number(gameResponse.price),
+        image: gameResponse.image || "https://via.placeholder.com/460x215",
+        category: gameResponse.category || "Action",
+        rating: Number(gameResponse.rating) || 0,
+        features: gameResponse.features || [],
+        is_visible: gameResponse.is_visible,
+      });
+      
+      const reviewsArray = Array.isArray(reviewsResponse) ? reviewsResponse : [];
+      setReviews(reviewsArray.map((r: any) => ({
+        id: String(r.id),
+        game_id: String(r.gameId || r.game_id),
+        user_id: String(r.userId || r.user_id),
+        user: { id: String(r.userId || r.user_id), username: r.userName || r.user?.username || 'Anonymous' },
+        rating: r.rating,
+        content: r.comment || r.content,
+        created_at: r.date || r.created_at,
+      })));
+
+      // Check ownership if authenticated
+      if (isAuthenticated && gameId) {
+        try {
+          const ownershipResponse = await purchasesAPI.checkOwnership(gameId);
+          setOwned(ownershipResponse.owned);
+        } catch {
+          setOwned(false);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load game:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (game) {
+      addToCart(game);
+    }
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isAuthenticated || !user || !gameId) {
+      navigate("login");
+      return;
+    }
+
+    setSubmitting(true);
+    setError("");
+
+    try {
+      await reviewsAPI.create(gameId, newRating, newComment);
+      await loadGameData(); // Reload reviews
+      setNewComment("");
+      setNewRating(5);
+      setShowReviewForm(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit review");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!gameId) return;
+    try {
+      await reviewsAPI.delete(gameId, reviewId);
+      await loadGameData();
+    } catch (err) {
+      console.error("Failed to delete review:", err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="game-details-page">
+        <div className="loading-container">
+          <h2>Loading...</h2>
+        </div>
+      </div>
+    );
+  }
 
   if (!game) {
     return (
@@ -54,39 +139,14 @@ export default function GameDetailsPage() {
     );
   }
 
-  const handleAddToCart = () => {
-    addToCart(game);
-  };
-
-  const handleSubmitReview = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isAuthenticated || !user) {
-      navigate("login");
-      return;
-    }
-
-    const review: Review = {
-      id: Date.now().toString(),
-      gameId: game.id,
-      userId: user.id,
-      userName: user.name,
-      rating: newRating,
-      comment: newComment,
-      date: new Date().toISOString().split("T")[0],
-    };
-
-    setReviews([review, ...reviews]);
-    setNewComment("");
-    setNewRating(5);
-    setShowReviewForm(false);
-  };
-
   const averageRating =
     reviews.length > 0
-      ? (
-          reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-        ).toFixed(1)
-      : game.rating;
+      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+      : game.rating.toFixed(1);
+
+  const userHasReviewed = reviews.some(
+    (r) => user && String(r.user_id) === String(user.id)
+  );
 
   return (
     <div className="game-details-page">
@@ -108,36 +168,52 @@ export default function GameDetailsPage() {
           </div>
           <p className="game-description">{game.description}</p>
           <div className="game-price-section">
-            <span className="price">${game.price}</span>
-            <button className="btn-purchase" onClick={handleAddToCart}>
-              ADD TO CART
-            </button>
+            <span className="price">${game.price.toFixed(2)}</span>
+            {owned ? (
+              <button className="btn-owned" disabled>
+                OWNED
+              </button>
+            ) : isInCart(game.id) ? (
+              <button className="btn-in-cart" onClick={() => navigate("cart")}>
+                VIEW IN CART
+              </button>
+            ) : (
+              <button className="btn-purchase" onClick={handleAddToCart}>
+                ADD TO CART
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="game-features-section">
-        <h2>GAME FEATURES</h2>
-        <div className="features-list">
-          {game.features.map((feature) => (
-            <div key={feature} className="feature-item">
-              <span className="feature-bullet">●</span>
-              <span>{feature}</span>
-            </div>
-          ))}
+      {game.features && game.features.length > 0 && (
+        <div className="game-features-section">
+          <h2>GAME FEATURES</h2>
+          <div className="features-list">
+            {game.features.map((feature) => (
+              <div key={feature} className="feature-item">
+                <span className="feature-bullet">●</span>
+                <span>{feature}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="reviews-section">
         <div className="reviews-header">
           <h2>PLAYER REVIEWS</h2>
           {isAuthenticated ? (
-            <button
-              className="btn-write-review"
-              onClick={() => setShowReviewForm(!showReviewForm)}
-            >
-              {showReviewForm ? "CANCEL" : "WRITE REVIEW"}
-            </button>
+            userHasReviewed ? (
+              <span className="already-reviewed">You've reviewed this game</span>
+            ) : (
+              <button
+                className="btn-write-review"
+                onClick={() => setShowReviewForm(!showReviewForm)}
+              >
+                {showReviewForm ? "CANCEL" : "WRITE REVIEW"}
+              </button>
+            )
           ) : (
             <button
               className="btn-write-review"
@@ -147,6 +223,8 @@ export default function GameDetailsPage() {
             </button>
           )}
         </div>
+
+        {error && <div className="review-error">{error}</div>}
 
         {showReviewForm && (
           <form className="review-form" onSubmit={handleSubmitReview}>
@@ -179,8 +257,8 @@ export default function GameDetailsPage() {
                 required
               />
             </div>
-            <button type="submit" className="btn-submit-review">
-              SUBMIT REVIEW
+            <button type="submit" className="btn-submit-review" disabled={submitting}>
+              {submitting ? "SUBMITTING..." : "SUBMIT REVIEW"}
             </button>
           </form>
         )}
@@ -195,15 +273,27 @@ export default function GameDetailsPage() {
               <div key={review.id} className="review-card">
                 <div className="review-header">
                   <div>
-                    <h4>{review.userName}</h4>
-                    <span className="review-date">{review.date}</span>
+                    <h4>{review.user?.username || "Anonymous"}</h4>
+                    <span className="review-date">
+                      {new Date(review.created_at).toLocaleDateString()}
+                    </span>
                   </div>
-                  <div className="review-rating">
-                    {"★".repeat(review.rating)}
-                    {"☆".repeat(5 - review.rating)}
+                  <div className="review-actions">
+                    <div className="review-rating">
+                      {"★".repeat(review.rating)}
+                      {"☆".repeat(5 - review.rating)}
+                    </div>
+                    {user && String(review.user_id) === String(user.id) && (
+                      <button
+                        className="btn-delete-review"
+                        onClick={() => handleDeleteReview(review.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </div>
                 </div>
-                <p className="review-comment">{review.comment}</p>
+                <p className="review-comment">{review.content}</p>
               </div>
             ))
           )}

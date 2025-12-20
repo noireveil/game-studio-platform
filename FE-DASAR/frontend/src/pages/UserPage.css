@@ -263,6 +263,146 @@
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
 }
 
+/* Username edit styles */
+.username-section {
+  margin-bottom: 1rem;
+}
+
+.display-username {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.edit-username {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.username-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #fbbf24;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.btn-edit, .btn-save, .btn-cancel {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-edit:hover {
+  background: #fbbf24;
+  color: #1e3a8a;
+}
+
+.btn-save {
+  background: #22c55e;
+}
+
+.btn-save:hover {
+  background: #16a34a;
+}
+
+.btn-cancel {
+  background: #ef4444;
+}
+
+.btn-cancel:hover {
+  background: #dc2626;
+}
+
+.update-error {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.update-success {
+  color: #22c55e;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.user-role {
+  color: #cbd5e1;
+  font-size: 1.125rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-badge {
+  color: #fbbf24 !important;
+  font-weight: 700;
+}
+
+/* Full width section */
+.section-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.loading-text {
+  color: #94a3b8;
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-library {
+  text-align: center;
+  padding: 3rem;
+}
+
+.empty-library svg {
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.empty-library p {
+  color: #94a3b8;
+  margin-bottom: 1.5rem;
+}
+
+.btn-browse {
+  background: #fbbf24;
+  color: #1e3a8a;
+  border: none;
+  padding: 1rem 2rem;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.library-item-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+  padding: 1rem 0.75rem;
+}
+
+.library-item-info .game-title {
+  color: white;
+  font-weight: 700;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.library-item-info .purchase-date {
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
 @media (max-width: 1024px) {
   .user-sections {
     grid-template-columns: 1fr;

@@ -1,14 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Filter } from "lucide-react";
 import { useRouter } from "../context/RouterContext";
 import { useCart } from "../context/CartContext";
-import { games } from "../data/games";
+import { gamesAPI } from "../services/api";
+import { Game } from "../types";
 import "./GamesPage.css";
 
 export default function GamesPage() {
   const { navigate, setGameId } = useRouter();
-  const { addToCart } = useCart();
+  const { addToCart, isInCart } = useCart();
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [games, setGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadGames();
+  }, []);
+
+  const loadGames = async () => {
+    try {
+      const response = await gamesAPI.getAll();
+      // response is already unwrapped - it's the array of games directly
+      const gamesArray = Array.isArray(response) ? response : [];
+      setGames(
+        gamesArray.map((g: any) => ({
+          id: String(g.id),
+          title: g.title,
+          description: g.description || "",
+          price: Number(g.price),
+          image: g.image || "https://via.placeholder.com/460x215",
+          category: g.category || "Action",
+          rating: Number(g.rating) || 0,
+          features: g.features || [],
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to load games:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const categories = [
     "All",
@@ -25,10 +56,21 @@ export default function GamesPage() {
     navigate("game-details");
   };
 
-  const handleAddToCart = (e: React.MouseEvent, game: any) => {
+  const handleAddToCart = (e: React.MouseEvent, game: Game) => {
     e.stopPropagation();
     addToCart(game);
   };
+
+  if (loading) {
+    return (
+      <div className="games-page">
+        <div className="games-hero">
+          <h1>OUR GAMES</h1>
+          <p>Loading games...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="games-page">
@@ -88,7 +130,7 @@ export default function GamesPage() {
                   <h3>{game.title}</h3>
                   <p className="game-category">{game.category}</p>
                   <div className="game-features">
-                    {game.features.slice(0, 2).map((feature) => (
+                    {game.features?.slice(0, 2).map((feature) => (
                       <span key={feature} className="feature-tag">
                         {feature}
                       </span>
@@ -96,14 +138,14 @@ export default function GamesPage() {
                   </div>
                   <div className="game-footer">
                     <div>
-                      <span className="game-rating">★ {game.rating}</span>
-                      <span className="game-price">${game.price}</span>
+                      <span className="game-rating">★ {game.rating.toFixed(1)}</span>
+                      <span className="game-price">${game.price.toFixed(2)}</span>
                     </div>
                     <button
-                      className="btn-add-cart"
+                      className={`btn-add-cart ${isInCart(game.id) ? "in-cart" : ""}`}
                       onClick={(e) => handleAddToCart(e, game)}
                     >
-                      ADD TO CART
+                      {isInCart(game.id) ? "IN CART" : "ADD TO CART"}
                     </button>
                   </div>
                 </div>

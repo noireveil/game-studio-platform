@@ -7,26 +7,40 @@ export interface Game {
   category: string;
   rating: number;
   features: string[];
+  is_visible?: boolean;
 }
 
 export interface CartItem {
   game: Game;
-  quantity: number;
 }
 
 export interface Review {
   id: string;
-  gameId: string;
-  userId: string;
-  userName: string;
+  game_id: string;
+  user_id: string;
+  user?: {
+    id: string;
+    username: string;
+  };
   rating: number;
-  comment: string;
-  date: string;
+  content: string;
+  created_at: string;
 }
 
 export interface User {
   id: string;
-  name: string;
+  username: string;
   email: string;
+  role: 'user' | 'admin';
   avatar?: string;
+  purchases?: Purchase[];
+}
+
+export interface Purchase {
+  id: string;
+  user_id: string;
+  game_id: string;
+  price_at_purchase: number;
+  created_at: string;
+  game?: Game;
 }

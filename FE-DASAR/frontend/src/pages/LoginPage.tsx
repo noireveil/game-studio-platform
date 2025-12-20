@@ -5,15 +5,46 @@ import { useRouter } from "../context/RouterContext";
 import "./LoginPage.css";
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, register, error } = useAuth();
   const { navigate } = useRouter();
+  const [isRegister, setIsRegister] = useState(false);
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [localError, setLocalError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, password);
-    navigate("home");
+    setLocalError("");
+    setIsLoading(true);
+
+    try {
+      if (isRegister) {
+        if (password !== confirmPassword) {
+          setLocalError("Passwords do not match");
+          setIsLoading(false);
+          return;
+        }
+        if (password.length < 6) {
+          setLocalError("Password must be at least 6 characters");
+          setIsLoading(false);
+          return;
+        }
+        const success = await register(username, email, password);
+        if (success) {
+          navigate("home");
+        }
+      } else {
+        const success = await login(email, password);
+        if (success) {
+          navigate("home");
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -22,10 +53,30 @@ export default function LoginPage() {
         <div className="login-header">
           <Gamepad2 size={64} />
           <h1>GAME STUDIO</h1>
-          <p>Sign in to continue your gaming journey</p>
+          <p>{isRegister ? "Create your gaming account" : "Sign in to continue your gaming journey"}</p>
         </div>
 
+        {(error || localError) && (
+          <div className="error-message">
+            {localError || error}
+          </div>
+        )}
+
         <form className="login-form" onSubmit={handleSubmit}>
+          {isRegister && (
+            <div className="form-group">
+              <label htmlFor="username">USERNAME</label>
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
+                required
+              />
+            </div>
+          )}
+
           <div className="form-group">
             <label htmlFor="email">EMAIL ADDRESS</label>
             <input
@@ -50,24 +101,43 @@ export default function LoginPage() {
             />
           </div>
 
-          <div className="form-options">
-            <label className="checkbox-label">
-              <input type="checkbox" />
-              <span>Remember me</span>
-            </label>
-            <a href="#" className="forgot-link">
-              Forgot password?
-            </a>
-          </div>
+          {isRegister && (
+            <div className="form-group">
+              <label htmlFor="confirmPassword">CONFIRM PASSWORD</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+                required
+              />
+            </div>
+          )}
 
-          <button type="submit" className="btn-login">
-            SIGN IN
+          {!isRegister && (
+            <div className="form-options">
+              <label className="checkbox-label">
+                <input type="checkbox" />
+                <span>Remember me</span>
+              </label>
+              <a href="#" className="forgot-link">
+                Forgot password?
+              </a>
+            </div>
+          )}
+
+          <button type="submit" className="btn-login" disabled={isLoading}>
+            {isLoading ? "LOADING..." : (isRegister ? "SIGN UP" : "SIGN IN")}
           </button>
         </form>
 
         <div className="login-footer">
           <p>
-            Don't have an account? <a href="#">Sign up</a>
+            {isRegister ? "Already have an account? " : "Don't have an account? "}
+            <a href="#" onClick={(e) => { e.preventDefault(); setIsRegister(!isRegister); setLocalError(""); }}>
+              {isRegister ? "Sign in" : "Sign up"}
+            </a>
           </p>
         </div>
 

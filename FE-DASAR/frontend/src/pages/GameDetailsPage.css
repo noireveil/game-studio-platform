@@ -341,7 +341,8 @@
   font-size: 1rem;
 }
 
-.error-container {
+.error-container,
+.loading-container {
   max-width: 600px;
   margin: 4rem auto;
   text-align: center;
@@ -350,11 +351,83 @@
   border-radius: 12px;
 }
 
-.error-container h2 {
+.error-container h2,
+.loading-container h2 {
   color: white;
   font-size: 2rem;
   font-weight: 900;
   margin-bottom: 2rem;
+}
+
+/* Additional button states */
+.btn-owned {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 1rem 2.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: not-allowed;
+  letter-spacing: 2px;
+}
+
+.btn-in-cart {
+  background: #fbbf24;
+  color: #1e3a8a;
+  border: none;
+  padding: 1rem 2.5rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 2px;
+}
+
+.btn-in-cart:hover {
+  transform: translateY(-3px);
+}
+
+/* Review improvements */
+.review-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.already-reviewed {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.review-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-delete-review {
+  background: rgba(239, 68, 68, 0.2);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #ef4444;
+  transition: all 0.3s ease;
+}
+
+.btn-delete-review:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-submit-review:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 @media (max-width: 1024px) {

@@ -266,6 +266,14 @@
   transform: translateY(-2px);
 }
 
+.btn-add-cart.in-cart {
+  background: #22c55e;
+}
+
+.btn-add-cart.in-cart:hover {
+  background: #16a34a;
+}
+
 @media (max-width: 1024px) {
   .games-container {
     grid-template-columns: 1fr;

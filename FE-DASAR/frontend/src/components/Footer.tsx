@@ -33,16 +33,16 @@ export default function Footer() {
           <h3>GAMES</h3>
           <ul>
             <li>
-              <a href="#">All Games</a>
+              <a href="/games">All Games</a>
             </li>
             <li>
-              <a href="#">New Releases</a>
+              <a href="/games">New Releases</a>
             </li>
             <li>
-              <a href="#">Coming Soon</a>
+              <a href="/games">Coming Soon</a>
             </li>
             <li>
-              <a href="#">Top Rated</a>
+              <a href="/games">Top Rated</a>
             </li>
           </ul>
         </div>
@@ -85,7 +85,7 @@ export default function Footer() {
       </div>
 
       <div className="footer-bottom">
-        <p>&copy; 2024 Game Studio. All rights reserved.</p>
+        <p>&copy; 2025 Game Studio. All rights reserved.</p>
       </div>
     </footer>
   );

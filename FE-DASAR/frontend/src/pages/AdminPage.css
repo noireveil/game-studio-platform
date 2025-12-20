@@ -572,3 +572,157 @@ tbody tr:hover {
     padding: 0.75rem;
   }
 }
+
+/* Visibility styles */
+.visibility-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.visibility-badge.visible {
+  background: #22c55e;
+  color: white;
+}
+
+.visibility-badge.hidden {
+  background: #ef4444;
+  color: white;
+}
+
+.hidden-game {
+  opacity: 0.6;
+}
+
+.btn-visibility {
+  background: #64748b;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-visibility:hover {
+  background: #475569;
+}
+
+/* Role badges */
+.role-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.role-badge.admin {
+  background: #fbbf24;
+  color: #1e3a8a;
+}
+
+.role-badge.user {
+  background: #64748b;
+  color: white;
+}
+
+/* Loading and error states */
+.loading-container,
+.error-container {
+  text-align: center;
+  padding: 4rem;
+  color: white;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  margin: 2rem;
+  border-radius: 12px;
+}
+
+.loading-container h2,
+.error-container h2 {
+  color: #fbbf24;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.loading-container p,
+.error-container p {
+  color: #94a3b8;
+  margin-top: 1rem;
+}
+
+.no-reviews {
+  color: #94a3b8;
+  text-align: center;
+  padding: 2rem;
+}
+
+.btn-refresh {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-refresh:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+
+.no-data-container {
+  text-align: center;
+  padding: 3rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.review-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #fbbf24;
+}
+
+.review-content {
+  flex: 1;
+}
+
+.review-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.no-data {
+  color: #94a3b8;
+  font-style: italic;
+  padding: 1rem;
+}

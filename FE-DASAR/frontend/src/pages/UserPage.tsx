@@ -1,11 +1,62 @@
-import { User, Mail, Calendar, Award, ShoppingBag } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Mail, Calendar, Award, ShoppingBag, Edit2, X, Check } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "../context/RouterContext";
+import { purchasesAPI } from "../services/api";
+import { Purchase } from "../types";
 import "./UserPage.css";
 
 export default function UserPage() {
-  const { user, isAuthenticated } = useAuth();
-  const { navigate } = useRouter();
+  const { user, isAuthenticated, updateProfile } = useAuth();
+  const { navigate, setGameId } = useRouter();
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [updateError, setUpdateError] = useState("");
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadPurchases();
+    }
+  }, [isAuthenticated]);
+
+  const loadPurchases = async () => {
+    try {
+      const response = await purchasesAPI.getMyPurchases();
+      // Response is already unwrapped - it's the array directly
+      const purchasesArray = Array.isArray(response) ? response : [];
+      setPurchases(purchasesArray);
+    } catch (err) {
+      console.error('Failed to load purchases:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditClick = () => {
+    setNewUsername(user?.username || "");
+    setIsEditing(true);
+    setUpdateError("");
+    setUpdateSuccess(false);
+  };
+
+  const handleSaveUsername = async () => {
+    if (!newUsername.trim()) {
+      setUpdateError("Username cannot be empty");
+      return;
+    }
+
+    const success = await updateProfile(newUsername);
+    if (success) {
+      setIsEditing(false);
+      setUpdateSuccess(true);
+      setTimeout(() => setUpdateSuccess(false), 3000);
+    } else {
+      setUpdateError("Failed to update username");
+    }
+  };
 
   if (!isAuthenticated || !user) {
     return (
@@ -28,22 +79,51 @@ export default function UserPage() {
       <div className="user-container">
         <div className="user-hero">
           <div className="user-avatar">
-            {user.avatar ? (
-              <img src={user.avatar} alt={user.name} />
-            ) : (
-              <User size={80} />
-            )}
+            <User size={80} />
           </div>
           <div className="user-info">
-            <h1>{user.name}</h1>
+            <div className="username-section">
+              {isEditing ? (
+                <div className="edit-username">
+                  <input
+                    type="text"
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    className="username-input"
+                    autoFocus
+                  />
+                  <button className="btn-save" onClick={handleSaveUsername}>
+                    <Check size={20} />
+                  </button>
+                  <button className="btn-cancel" onClick={() => setIsEditing(false)}>
+                    <X size={20} />
+                  </button>
+                </div>
+              ) : (
+                <div className="display-username">
+                  <h1>{user.username}</h1>
+                  <button className="btn-edit" onClick={handleEditClick}>
+                    <Edit2 size={20} />
+                  </button>
+                </div>
+              )}
+              {updateError && <p className="update-error">{updateError}</p>}
+              {updateSuccess && <p className="update-success">Username updated!</p>}
+            </div>
             <p className="user-email">
               <Mail size={20} />
               {user.email}
             </p>
             <p className="user-joined">
               <Calendar size={20} />
-              Member since December 2024
+              Member since December 2025
             </p>
+            {user.role === 'admin' && (
+              <p className="user-role admin-badge">
+                <Award size={20} />
+                Administrator
+              </p>
+            )}
           </div>
         </div>
 
@@ -53,7 +133,7 @@ export default function UserPage() {
               <ShoppingBag size={32} />
             </div>
             <div className="stat-info">
-              <h3>12</h3>
+              <h3>{purchases.length}</h3>
               <p>Games Owned</p>
             </div>
           </div>
@@ -62,97 +142,48 @@ export default function UserPage() {
               <Award size={32} />
             </div>
             <div className="stat-info">
-              <h3>47</h3>
-              <p>Achievements</p>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">
-              <User size={32} />
-            </div>
-            <div className="stat-info">
-              <h3>8</h3>
-              <p>Reviews Written</p>
+              <h3>${purchases.reduce((sum, p) => sum + Number(p.price_at_purchase || 0), 0).toFixed(2)}</h3>
+              <p>Total Spent</p>
             </div>
           </div>
         </div>
 
         <div className="user-sections">
-          <div className="section-card">
-            <h2>RECENT ACTIVITY</h2>
-            <div className="activity-list">
-              <div className="activity-item">
-                <div className="activity-icon">🎮</div>
-                <div className="activity-details">
-                  <p className="activity-title">
-                    Purchased Speed Racer Ultimate
-                  </p>
-                  <p className="activity-date">2 days ago</p>
-                </div>
-              </div>
-              <div className="activity-item">
-                <div className="activity-icon">⭐</div>
-                <div className="activity-details">
-                  <p className="activity-title">
-                    Reviewed Battle Arena Champions
-                  </p>
-                  <p className="activity-date">5 days ago</p>
-                </div>
-              </div>
-              <div className="activity-item">
-                <div className="activity-icon">🏆</div>
-                <div className="activity-details">
-                  <p className="activity-title">
-                    Unlocked "Speed Demon" achievement
-                  </p>
-                  <p className="activity-date">1 week ago</p>
-                </div>
-              </div>
-              <div className="activity-item">
-                <div className="activity-icon">🎮</div>
-                <div className="activity-details">
-                  <p className="activity-title">Purchased Galaxy Warriors</p>
-                  <p className="activity-date">2 weeks ago</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="section-card">
+          <div className="section-card full-width">
             <h2>MY LIBRARY</h2>
-            <div className="library-grid">
-              <div className="library-item">
-                <img
-                  src="https://images.pexels.com/photos/1174746/pexels-photo-1174746.jpeg?auto=compress&cs=tinysrgb&w=400"
-                  alt="Game"
-                />
-                <p>Speed Racer Ultimate</p>
+            {loading ? (
+              <p className="loading-text">Loading your games...</p>
+            ) : purchases.length === 0 ? (
+              <div className="empty-library">
+                <ShoppingBag size={48} />
+                <p>You haven't purchased any games yet</p>
+                <button className="btn-browse" onClick={() => navigate("games")}>
+                  BROWSE GAMES
+                </button>
               </div>
-              <div className="library-item">
-                <img
-                  src="https://images.pexels.com/photos/3945683/pexels-photo-3945683.jpeg?auto=compress&cs=tinysrgb&w=400"
-                  alt="Game"
-                />
-                <p>Battle Arena Champions</p>
+            ) : (
+              <div className="library-grid">
+                {purchases.map((purchase) => (
+                  <div 
+                    key={purchase.id} 
+                    className="library-item" 
+                    onClick={() => {
+                      setGameId(String(purchase.game_id));
+                      navigate("game-details");
+                    }}
+                  >
+                    <img
+                      src={purchase.game?.image || "https://via.placeholder.com/400x200"}
+                      alt={purchase.game?.title || "Game"}
+                    />
+                    <div className="library-item-info">
+                      <p className="game-title">{purchase.game?.title || "Unknown Game"}</p>
+                      <p className="purchase-date">Purchased: {new Date(purchase.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="library-item">
-                <img
-                  src="https://images.pexels.com/photos/275033/pexels-photo-275033.jpeg?auto=compress&cs=tinysrgb&w=400"
-                  alt="Game"
-                />
-                <p>Galaxy Warriors</p>
-              </div>
-              <div className="library-item">
-                <img
-                  src="https://images.pexels.com/photos/259200/pexels-photo-259200.jpeg?auto=compress&cs=tinysrgb&w=400"
-                  alt="Game"
-                />
-                <p>Pool Master Pro</p>
-              </div>
-            </div>
-            <button className="btn-view-all" onClick={() => navigate("games")}>
-              VIEW ALL GAMES
-            </button>
+            )}
           </div>
         </div>
       </div>

@@ -10,7 +10,9 @@ class User extends Authenticatable
 {
     use HasApiTokens, Notifiable;
 
-    protected $fillable = ['username', 'email', 'password_hash'];
+    protected $fillable = ['username', 'email', 'password_hash', 'role'];
+
+    protected $hidden = ['password_hash'];
 
     // Override karena nama kolom password beda 
     public function getAuthPassword()
@@ -18,15 +20,27 @@ class User extends Authenticatable
         return $this->password_hash;
     }
 
-    // Relasi ke Roles (Admin/User)
-    public function roles()
+    /**
+     * Get user's reviews
+     */
+    public function reviews()
     {
-        return $this->belongsToMany(Role::class, 'user_roles');
+        return $this->hasMany(Review::class);
     }
 
-    // Helper untuk cek apakah user adalah admin (berguna untuk Middleware nanti)
+    /**
+     * Get user's purchases
+     */
+    public function purchases()
+    {
+        return $this->hasMany(Purchase::class);
+    }
+
+    /**
+     * Check if user is admin
+     */
     public function isAdmin()
     {
-        return $this->roles()->where('name', 'admin')->exists();
+        return $this->role === 'admin';
     }
 }

@@ -6,7 +6,7 @@ import "./Header.css";
 
 export default function Header() {
   const { navigate } = useRouter();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
   const { totalItems } = useCart();
 
   return (
@@ -33,13 +33,15 @@ export default function Header() {
               <button className="icon-button" onClick={() => navigate("user")}>
                 <User size={24} />
               </button>
-              <button
-                className="icon-button"
-                onClick={() => navigate("admin")}
-                title="Admin Panel"
-              >
-                <Settings size={24} />
-              </button>
+              {isAdmin && (
+                <button
+                  className="icon-button"
+                  onClick={() => navigate("admin")}
+                  title="Admin Panel"
+                >
+                  <Settings size={24} />
+                </button>
+              )}
               <button className="btn-secondary" onClick={logout}>
                 LOGOUT
               </button>

@@ -16,9 +16,10 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('game_id')->constrained('games')->onDelete('cascade');
             $table->decimal('price_at_purchase', 10, 2);
-            $table->string('payment_method', 50)->nullable();
-            $table->string('status', 20)->default('pending');
-            $table->timestamp('purchase_date')->useCurrent();
+            $table->timestamps();
+            
+            // One purchase per user per game (1 account = 1 game max)
+            $table->unique(['user_id', 'game_id']);
         });
     }
 

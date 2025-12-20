@@ -1,12 +1,39 @@
+import { useState, useEffect } from "react";
 import { Zap, Users, Trophy, Gamepad } from "lucide-react";
 import { useRouter } from "../context/RouterContext";
-import { games } from "../data/games";
+import { gamesAPI } from "../services/api";
+import { Game } from "../types";
 import "./HomePage.css";
 
 export default function HomePage() {
   const { navigate, setGameId } = useRouter();
+  const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
 
-  const featuredGames = games.slice(0, 4);
+  useEffect(() => {
+    loadFeaturedGames();
+  }, []);
+
+  const loadFeaturedGames = async () => {
+    try {
+      const response = await gamesAPI.getAll();
+      const gamesArray = Array.isArray(response) ? response : [];
+      // Get top 4 games
+      setFeaturedGames(
+        gamesArray.slice(0, 4).map((g: any) => ({
+          id: String(g.id),
+          title: g.title,
+          description: g.description || "",
+          price: Number(g.price),
+          image: g.image || "https://via.placeholder.com/460x215",
+          category: g.category || "Action",
+          rating: Number(g.rating) || 0,
+          features: g.features || [],
+        }))
+      );
+    } catch (err) {
+      console.error("Failed to load featured games:", err);
+    }
+  };
 
   const handleViewGame = (gameId: string) => {
     setGameId(gameId);
@@ -19,8 +46,8 @@ export default function HomePage() {
         <div className="hero-content">
           <div className="hero-badge">NOW AVAILABLE</div>
           <h1 className="hero-title">
-            <span className="title-white">EPIC</span>
-            <span className="title-yellow">GAMING</span>
+            <span className="title-white">BILLIARD</span>
+            <span className="title-yellow">JAVA</span>
           </h1>
           <p className="hero-subtitle">THE ULTIMATE GAMING EXPERIENCE</p>
           <div className="hero-buttons">
@@ -34,7 +61,7 @@ export default function HomePage() {
               className="btn-hero-secondary"
               onClick={() => navigate("about")}
             >
-              WATCH TRAILER
+              The TEAM
             </button>
           </div>
         </div>

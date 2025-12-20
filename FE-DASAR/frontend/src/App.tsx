@@ -1,5 +1,5 @@
 import { RouterProvider, useRouter } from "./context/RouterContext";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
@@ -10,9 +10,11 @@ import AboutPage from "./pages/AboutPage";
 import UserPage from "./pages/UserPage";
 import LoginPage from "./pages/LoginPage";
 import CartPage from "./pages/CartPage";
+import AdminPage from "./pages/AdminPage";
 
 function AppContent() {
-  const { currentPage } = useRouter();
+  const { currentPage, navigate } = useRouter();
+  const { isAdmin, isAuthenticated } = useAuth();
 
   const renderPage = () => {
     switch (currentPage) {
@@ -25,11 +27,18 @@ function AppContent() {
       case "about":
         return <AboutPage />;
       case "user":
-        return <UserPage />;
+        return isAuthenticated ? <UserPage /> : <LoginPage />;
       case "login":
         return <LoginPage />;
       case "cart":
         return <CartPage />;
+      case "admin":
+        // Only admin can access this page
+        if (!isAdmin) {
+          navigate("home");
+          return <HomePage />;
+        }
+        return <AdminPage />;
       default:
         return <HomePage />;
     }

@@ -75,23 +75,23 @@ export default function AboutPage() {
           <div className="team-grid">
             <div className="team-card">
               <img
-                src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=400"
+                src="../public/Daniel.jpeg"
                 alt="Team member"
               />
-              <h3>Alex Johnson</h3>
-              <p className="team-role">CEO & Founder</p>
+              <h3>Daniel Tadeo Evantiyasa</h3>
+              <p className="team-role">Frontend Engineer</p>
               <p className="team-bio">
-                Veteran game developer with 15+ years of experience creating
+                Veteran game developer with 15+ years of experience creating 
                 blockbuster titles
               </p>
             </div>
             <div className="team-card">
               <img
-                src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=400"
+                src="../public/Hamim.jpeg"
                 alt="Team member"
               />
-              <h3>Sarah Chen</h3>
-              <p className="team-role">Creative Director</p>
+              <h3>Hamim Mumtaz Ramadhan Laleno</h3>
+              <p className="team-role">Frontend & Database</p>
               <p className="team-bio">
                 Award-winning designer known for creating visually stunning game
                 worlds
@@ -99,25 +99,14 @@ export default function AboutPage() {
             </div>
             <div className="team-card">
               <img
-                src="https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=400"
+                src="../public/Untitled.png"
                 alt="Team member"
               />
-              <h3>Michael Torres</h3>
-              <p className="team-role">Lead Developer</p>
+              <h3>Sukarno Adi Prasetyo</h3>
+              <p className="team-role">Backend Engineer</p>
               <p className="team-bio">
                 Technical genius who brings innovative gameplay mechanics to
                 life
-              </p>
-            </div>
-            <div className="team-card">
-              <img
-                src="https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=400"
-                alt="Team member"
-              />
-              <h3>Emma Wilson</h3>
-              <p className="team-role">Community Manager</p>
-              <p className="team-bio">
-                Building and nurturing our amazing gaming community worldwide
               </p>
             </div>
           </div>
@@ -157,11 +146,11 @@ export default function AboutPage() {
             </div>
             <div className="contact-item">
               <h4>Location</h4>
-              <p>San Francisco, CA 94102</p>
+              <p>UNJ, Jakarta, Indonesia</p>
             </div>
             <div className="contact-item">
               <h4>Phone</h4>
-              <p>+1 (555) 123-4567</p>
+              <p>+62 (21) 123-4567</p>
             </div>
           </div>
         </section>

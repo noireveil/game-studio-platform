@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('developer', 100)->nullable();
-            $table->string('platform', 50)->nullable();
             $table->decimal('price', 10, 2)->default(0.00);
-            $table->date('release_date')->nullable();
+            $table->string('image')->nullable();
+            $table->string('category')->default('Action');
+            $table->decimal('rating', 3, 2)->default(0.00);
+            $table->json('features')->nullable();
+            $table->boolean('is_visible')->default(true);
             $table->timestamps();
         });
     }

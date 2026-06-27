@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:8000/api';
+/// <reference types="vite/client" />
+
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 // Helper function to get auth token
 const getToken = () => localStorage.getItem('auth_token');
@@ -14,7 +16,7 @@ async function apiRequest(endpoint: string, options: RequestInit = {}) {
     ...options.headers,
   };
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
     headers,
   });

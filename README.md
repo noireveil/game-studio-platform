@@ -64,7 +64,7 @@ GameStore is a modern e-commerce platform for digital games. Users can browse ga
 
 ### Backend
 - **Laravel 10** - PHP Framework
-- **MySQL** - Database
+- **PostgreSQ** - Database
 - **Sanctum** - API Authentication
 - **Eloquent ORM** - Database operations
 
@@ -129,7 +129,7 @@ Website-BL/
 - Node.js 18+
 - PHP 8.1+
 - Composer
-- MySQL
+- PostgreSQ
 
 ### Backend Setup
 

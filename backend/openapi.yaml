@@ -1,0 +1,705 @@
+openapi: 3.0.0
+info:
+  title: Game Studio API
+  description: >
+    Spesifikasi REST API lengkap untuk backend GameStore berdasarkan arsitektur file api.php.
+    Catatan: seluruh endpoint dengan tag `Admin` membutuhkan role `admin` pada user yang login
+    (middleware `admin`), selain token JWT (Bearer) yang valid (middleware `auth:sanctum`).
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000/api
+    description: Local Development Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          type: string
+          enum: [user, admin]
+
+    Game:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        category:
+          type: string
+        rating:
+          type: number
+          format: float
+          readOnly: true
+        is_visible:
+          type: boolean
+
+    GameInput:
+      type: object
+      description: Payload untuk membuat/mengubah game (tanpa field yang auto-generated seperti id dan rating)
+      required: [title, price, category]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+          format: float
+        category:
+          type: string
+        is_visible:
+          type: boolean
+          default: true
+
+    Purchase:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        game_id:
+          type: integer
+        price_at_purchase:
+          type: number
+          format: float
+
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        game_id:
+          type: integer
+        rating:
+          type: integer
+        comment:
+          type: string
+
+  responses:
+    UnauthorizedError:
+      description: Token tidak ada atau tidak valid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Unauthenticated.
+
+    ForbiddenError:
+      description: Token valid, tapi user bukan admin
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Forbidden. Admin access required.
+
+    NotFoundError:
+      description: Resource dengan id tersebut tidak ditemukan
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Resource not found.
+
+    ValidationError:
+      description: Input tidak lolos validasi
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: The given data was invalid.
+              errors:
+                type: object
+
+paths:
+  # -------------------------
+  # TEST ENDPOINT
+  # -------------------------
+  /hello:
+    get:
+      summary: Test endpoint API
+      tags: [System]
+      responses:
+        '200':
+          description: API is working
+
+  # -------------------------
+  # AUTHENTICATION
+  # -------------------------
+  /auth/register:
+    post:
+      summary: Registrasi pengguna baru
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '201':
+          description: Registrasi berhasil
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/login:
+    post:
+      summary: Login dan mendapatkan token
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login sukses dan menerima token
+        '401':
+          description: Email atau password salah
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/me:
+    get:
+      summary: Mendapatkan data profil saat ini
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Data user saat ini
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/profile:
+    put:
+      summary: Memperbarui data profil
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Profil diperbarui
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/logout:
+    post:
+      summary: Logout dan hapus token Sanctum
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout berhasil
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # -------------------------
+  # PUBLIC GAMES & REVIEWS
+  # -------------------------
+  /games:
+    get:
+      summary: Mendapatkan semua katalog game (public)
+      tags: [Games]
+      responses:
+        '200':
+          description: Daftar game (is_visible=true)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+
+  /games/{id}:
+    get:
+      summary: Detail spesifik satu game
+      tags: [Games]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Data detail game
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /games/{gameId}/reviews:
+    get:
+      summary: Melihat daftar ulasan pada game tertentu
+      tags: [Reviews]
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Daftar ulasan
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+    post:
+      summary: Menambahkan ulasan baru pada game
+      tags: [Reviews]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        '201':
+          description: Ulasan ditambahkan
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /games/{gameId}/reviews/{reviewId}:
+    delete:
+      summary: Menghapus ulasan milik pengguna sendiri
+      tags: [Reviews]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+        - in: path
+          name: reviewId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ulasan dihapus
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Ulasan bukan milik user yang login
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # -------------------------
+  # PURCHASES
+  # -------------------------
+  /purchases:
+    get:
+      summary: Melihat riwayat pembelian
+      tags: [Purchases]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar riwayat pembelian
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      summary: Melakukan pembelian satu game (single purchase)
+      tags: [Purchases]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [game_id]
+              properties:
+                game_id:
+                  type: integer
+      responses:
+        '201':
+          description: Pembelian berhasil
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /purchases/checkout:
+    post:
+      summary: Melakukan checkout keranjang belanja (multiple games)
+      tags: [Purchases]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [game_ids]
+              properties:
+                game_ids:
+                  type: array
+                  items:
+                    type: integer
+                  minItems: 1
+      responses:
+        '201':
+          description: Checkout berhasil diproses
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /purchases/check/{gameId}:
+    get:
+      summary: Mengecek apakah pengguna sudah memiliki game ini
+      tags: [Purchases]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status kepemilikan
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # -------------------------
+  # ADMIN DASHBOARD
+  # -------------------------
+  /admin/dashboard:
+    get:
+      summary: Statistik ringkas untuk dashboard admin
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Data statistik sistem
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  # -------------------------
+  # ADMIN - USERS MANAGEMENT
+  # -------------------------
+  /admin/users:
+    get:
+      summary: Melihat semua pengguna
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar semua pengguna
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /admin/users/{id}:
+    delete:
+      summary: Menghapus akun pengguna
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Pengguna dihapus
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /admin/users/{id}/role:
+    put:
+      summary: Mengubah peran pengguna (user/admin)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [user, admin]
+      responses:
+        '200':
+          description: Peran diperbarui
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  # -------------------------
+  # ADMIN - REVIEWS MANAGEMENT
+  # -------------------------
+  /admin/reviews:
+    get:
+      summary: Melihat semua ulasan dalam sistem
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar ulasan (semua game)
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /admin/reviews/{id}:
+    delete:
+      summary: Menghapus ulasan apa pun (moderasi admin)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ulasan dihapus paksa
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # -------------------------
+  # ADMIN - GAMES MANAGEMENT
+  # -------------------------
+  /admin/games:
+    get:
+      summary: Melihat semua game termasuk yang tidak terlihat (is_visible=false)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar lengkap game
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+    post:
+      summary: Menambahkan data game baru
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameInput'
+      responses:
+        '201':
+          description: Game baru dibuat
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /admin/games/{id}:
+    put:
+      summary: Memperbarui spesifikasi game
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameInput'
+      responses:
+        '200':
+          description: Game diperbarui
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      summary: Menghapus game dari katalog
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Game dihapus
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'

@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://gamestore-backend.onrender.com/api';
 
 // Helper function to get auth token
 const getToken = () => localStorage.getItem('auth_token');

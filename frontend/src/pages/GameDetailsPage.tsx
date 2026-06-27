@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, Star, Trash2 } from "lucide-react";
 import { useRouter } from "../context/RouterContext";
 import { useCart } from "../context/CartContext";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { gamesAPI, reviewsAPI, purchasesAPI } from "../services/api";
-import { Game, Review } from "../types";
+import type { Game, Review } from "../types";
 import "./GameDetailsPage.css";
 
 export default function GameDetailsPage() {

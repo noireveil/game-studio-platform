@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ShoppingCart, Trash2, Check } from "lucide-react";
 import { useCart } from "../context/CartContext";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { useRouter } from "../context/RouterContext";
 import { purchasesAPI } from "../services/api";
 import "./CartPage.css";

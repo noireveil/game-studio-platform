@@ -3,7 +3,7 @@ import { Filter } from "lucide-react";
 import { useRouter } from "../context/RouterContext";
 import { useCart } from "../context/CartContext";
 import { gamesAPI } from "../services/api";
-import { Game } from "../types";
+import type { Game } from "../types";
 import "./GamesPage.css";
 
 export default function GamesPage() {

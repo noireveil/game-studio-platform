@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Zap, Users, Trophy, Gamepad } from "lucide-react";
 import { useRouter } from "../context/RouterContext";
 import { gamesAPI } from "../services/api";
-import { Game } from "../types";
+import type { Game } from "../types";
 import "./HomePage.css";
 
 export default function HomePage() {

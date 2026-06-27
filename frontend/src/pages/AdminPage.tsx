@@ -11,7 +11,7 @@ import {
   EyeOff,
   RefreshCw,
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { useRouter } from "../context/RouterContext";
 import { adminAPI, gamesAPI } from "../services/api";
 import type { Game } from "../types";

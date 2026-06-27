@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { User, Mail, Calendar, Award, ShoppingBag, Edit2, X, Check } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { useRouter } from "../context/RouterContext";
 import { purchasesAPI } from "../services/api";
-import { Purchase } from "../types";
+import type { Purchase } from "../types";
 import "./UserPage.css";
 
 export default function UserPage() {

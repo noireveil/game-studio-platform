@@ -9,28 +9,29 @@ use App\Models\Game;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Create admin user
-        User::create([
-            'username' => 'Admin',
-            'email' => 'admin@gamestore.com',
-            'password_hash' => Hash::make('admin123'),
-            'role' => 'admin',
-        ]);
+        // 1. Update atau Create Admin
+        User::updateOrCreate(
+            ['email' => 'admin@gamestore.com'],
+            [
+                'username' => 'Admin',
+                'password_hash' => Hash::make('admin123'),
+                'role' => 'admin',
+            ]
+        );
 
-        // Create test user
-        User::create([
-            'username' => 'TestUser',
-            'email' => 'user@test.com',
-            'password_hash' => Hash::make('user123'),
-            'role' => 'user',
-        ]);
+        // 2. Update atau Create Test User
+        User::updateOrCreate(
+            ['email' => 'user@test.com'],
+            [
+                'username' => 'TestUser',
+                'password_hash' => Hash::make('user123'),
+                'role' => 'user',
+            ]
+        );
 
-        // Create sample games
+        // 3. Update atau Create Games
         $games = [
             [
                 'title' => 'Cyberpunk 2077',
@@ -94,8 +95,11 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        foreach ($games as $game) {
-            Game::create($game);
+        foreach ($games as $gameData) {
+            Game::updateOrCreate(
+                ['title' => $gameData['title']], // Cek berdasarkan title
+                $gameData // Isi datanya
+            );
         }
     }
 }
